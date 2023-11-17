@@ -1,27 +1,15 @@
-#!/usr/bin/env bun
-import {
-  userInfo as _userInfo,
-  hostname as _hostname,
-  release as _release,
-} from 'os';
+#!/usr/bin/env node
+import { userInfo, hostname, release } from 'os';
 import osName from 'os-name';
+import { exec } from 'child_process';
 
 const colors = {
   reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  dim: '\x1b[2m',
-  underscore: '\x1b[4m',
-  blink: '\x1b[5m',
-  reverse: '\x1b[7m',
-  hidden: '\x1b[8m',
-  fgBlack: '\x1b[30m',
-  fgRed: '\x1b[31m',
-  fgGreen: '\x1b[32m',
-  fgYellow: '\x1b[33m',
   fgBlue: '\x1b[34m',
+  fgYellow: '\x1b[33m',
+  fgRed: '\x1b[31m',
   fgMagenta: '\x1b[35m',
   fgCyan: '\x1b[36m',
-  fgWhite: '\x1b[37m',
 };
 
 interface SystemInfo {
@@ -34,29 +22,63 @@ interface SystemInfo {
   shell?: string;
 }
 
-function getSystemInfo(): SystemInfo {
-  const userInfo = _userInfo();
-  const hostname = _hostname();
-  const release = _release();
-  const shell = process.env.SHELL;
+function getLinuxDistribution(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    exec(
+      'cat /etc/os-release | grep "^ID=" | cut -d "=" -f 2',
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        const distribution = stdout.trim();
+        resolve(distribution);
+      }
+    );
+  });
+}
+
+async function getSystemInfo(): Promise<SystemInfo> {
+  const userInfoResult = userInfo();
+  const hostnameResult = hostname();
+  const releaseResult = release();
+  const shellPath = process.env.SHELL;
+  const osNameResult = await getLinuxDistribution();
+
+  // Extract the shell name without the path
+  const shell = shellPath ? shellPath.split('/').pop() : undefined;
 
   return {
-    userInfo,
-    hostname,
-    release,
-    osName: osName(),
+    userInfo: userInfoResult,
+    hostname: hostnameResult,
+    release: releaseResult,
+    osName: osNameResult,
     shell,
   };
 }
 
+function capitalizeFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function displaySystemInfo(info: SystemInfo) {
+  const capitalizedOsName = capitalizeFirstLetter(info.osName);
+
   console.log(`
   (\\ /)       ${colors.fgBlue}${info.userInfo.username}${colors.reset}@${colors.fgBlue}${info.hostname}${colors.reset} 
-  ( . .)      ${colors.fgYellow}OS:${colors.reset} ${info.osName}
+  ( . .)      ${colors.fgYellow}OS:${colors.reset} ${capitalizedOsName}
   c(${colors.fgRed}"${colors.reset})(${colors.fgRed}"${colors.reset})     ${colors.fgMagenta}Kernel:${colors.reset} ${info.release}
               ${colors.fgCyan}Shell:${colors.reset} ${info.shell} 
   `);
 }
 
-const systemInfo = getSystemInfo();
-displaySystemInfo(systemInfo);
+async function main() {
+  try {
+    const systemInfo = await getSystemInfo();
+    displaySystemInfo(systemInfo);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+main();
