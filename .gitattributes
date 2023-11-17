@@ -1,2 +1,2 @@
-*.js linguist-detectable=false
-*.ts linguist-detectable=true
+# github/linguist override
+*.ts linguist-language=Typescript
