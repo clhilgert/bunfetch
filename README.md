@@ -27,7 +27,6 @@ curl -fsSL https://bun.sh/install | bash
 ```
 2. Clone this repository and build.
 ```sh
-mkdir bunfetch
 git clone https://github.com/clhilgert/bunfetch.git
 cd bunfetch
 bun build --compile ./main.ts --outfile=bunfetch
