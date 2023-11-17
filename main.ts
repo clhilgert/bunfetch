@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { userInfo, hostname, release } from 'os';
-import osName from 'os-name';
 import { exec } from 'child_process';
 
 const colors = {
@@ -45,7 +44,6 @@ async function getSystemInfo(): Promise<SystemInfo> {
   const shellPath = process.env.SHELL;
   const osNameResult = await getLinuxDistribution();
 
-  // Extract the shell name without the path
   const shell = shellPath ? shellPath.split('/').pop() : undefined;
 
   return {

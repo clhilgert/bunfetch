@@ -2,9 +2,6 @@
   "name": "bunfetch",
   "module": "main.ts",
   "type": "module",
-  "dependencies": {
-    "os-name": "^5.1.0"
-  },
   "devDependencies": {
     "bun-types": "latest"
   },
