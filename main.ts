@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 import { userInfo, hostname, release } from 'os';
 import { exec } from 'child_process';
 
